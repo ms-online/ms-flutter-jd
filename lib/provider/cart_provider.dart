@@ -23,6 +23,7 @@ class CartProvider with ChangeNotifier {
     // 先把缓存里的数据取出来
     List<String> list = [];
     list = prefs.getStringList("cartInfo");
+    models.clear();
 
     // 判断取出来的list有没有东西
     if (list == null) {
@@ -66,7 +67,7 @@ class CartProvider with ChangeNotifier {
       }
 
       // 存入缓存
-      prefs.setStringList("cartIinfo", tmpList);
+      prefs.setStringList("cartInfo", tmpList);
 
       // 通知听众
       notifyListeners();
@@ -80,5 +81,50 @@ class CartProvider with ChangeNotifier {
       count += data.count;
     }
     return count;
+  }
+
+  // 获取购物车的商品
+  void getCartList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> list = [];
+    // 取出缓存
+    list = prefs.getStringList("cartInfo");
+    if (list != null) {
+      for (var i = 0; i < list.length; i++) {
+        PartData tmpData = PartData.fromJson(json.decode(list[i]));
+        models.add(tmpData);
+      }
+      notifyListeners();
+    }
+  }
+
+  // 删除商品
+  void removeFromCart(String id) async {
+    // 从缓存中删除
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> list = [];
+    // 取出缓存
+    list = prefs.getStringList("cartInfo");
+
+    // 遍历缓存数据
+    for (var i = 0; i < list.length; i++) {
+      PartData tmpData = PartData.fromJson(json.decode(list[i]));
+      if (tmpData.id == id) {
+        list.remove(list[i]);
+        break;
+      }
+    }
+
+    // 遍历本地数据
+    for (var i = 0; i < models.length; i++) {
+      if (this.models[i].id == id) {
+        this.models.remove(this.models[i]);
+        break;
+      }
+    }
+
+    // 缓存重新赋值
+    prefs.setStringList("cartInfo", list);
+    notifyListeners();
   }
 }
