@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:common_utils/common_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:jd_app/model/product_detail_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartProvider with ChangeNotifier {
   List<PartData> models = [];
+  bool isSelectAll = false;
 
   Future<void> addToCart(PartData data) async {
     // print(data.toJson());
@@ -126,5 +128,64 @@ class CartProvider with ChangeNotifier {
     // 缓存重新赋值
     prefs.setStringList("cartInfo", list);
     notifyListeners();
+  }
+
+  // 选中状态
+  void changeSelectId(String id) {
+    int tmpCount = 0;
+    // print(id);
+    for (var i = 0; i < this.models.length; i++) {
+      if (id == this.models[i].id) {
+        this.models[i].isSelected = !this.models[i].isSelected;
+      }
+      if (this.models[i].isSelected) {
+        tmpCount++;
+      }
+    }
+
+    // 如果tmpCount的个数 和models.length一直 那就是全选状态
+    if (tmpCount == this.models.length) {
+      this.isSelectAll = true;
+    } else {
+      this.isSelectAll = false;
+    }
+
+    notifyListeners();
+  }
+
+  // 全选
+  void changeSelectAll() {
+    isSelectAll = !isSelectAll;
+    for (var i = 0; i < this.models.length; i++) {
+      this.models[i].isSelected = isSelectAll;
+    }
+    notifyListeners();
+  }
+
+  // 统计合计金额
+  String getAmount() {
+    String amountStr = "0.00";
+
+    for (var i = 0; i < this.models.length; i++) {
+      if (this.models[i].isSelected == true) {
+        num price = this.models[i].count *
+            NumUtil.getNumByValueStr(this.models[i].price, fractionDigits: 2);
+        num amount = NumUtil.getNumByValueStr(amountStr, fractionDigits: 2);
+        amountStr = NumUtil.add(amount, price).toString();
+      }
+    }
+    return amountStr;
+  }
+
+  // 统计选中商品个数
+  int getSelectedCount() {
+    int selectedCount = 0;
+
+    for (var i = 0; i < this.models.length; i++) {
+      if (this.models[i].isSelected == true) {
+        selectedCount++;
+      }
+    }
+    return selectedCount;
   }
 }

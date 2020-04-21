@@ -70,13 +70,16 @@ class _CartPageState extends State<CartPage> {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                           child: Image.asset(
-                            "assets/image/unselect.png",
+                            provider.isSelectAll
+                                ? "assets/image/selected.png"
+                                : "assets/image/unselect.png",
                             width: 20,
                             height: 20,
                           ),
                         ),
                         onTap: () {
                           // 选中事件
+                          provider.changeSelectAll();
                         },
                       ),
                       Text(
@@ -90,7 +93,7 @@ class _CartPageState extends State<CartPage> {
                         "合计",
                         style: TextStyle(fontSize: 16.0),
                       ),
-                      Text("¥",
+                      Text("¥${provider.getAmount()}",
                           style: TextStyle(
                             fontSize: 16.0,
                             color: Color(0xFFe4393c),
@@ -103,7 +106,7 @@ class _CartPageState extends State<CartPage> {
                         color: Color(0xFFe4393c),
                         child: Center(
                           child: Text(
-                            '去结算()',
+                            '去结算(${provider.getSelectedCount()})',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
@@ -148,11 +151,16 @@ class _CartPageState extends State<CartPage> {
           InkWell(
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Image.asset("assets/image/unselect.png",
-                  width: 20, height: 20),
+              child: Image.asset(
+                  provider.models[index].isSelected
+                      ? "assets/image/selected.png"
+                      : "assets/image/unselect.png",
+                  width: 20,
+                  height: 20),
             ),
             onTap: () {
               // 选中事件
+              provider.changeSelectId(provider.models[index].id);
             },
           ),
           Expanded(
